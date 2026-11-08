@@ -41,9 +41,20 @@ public class Usuario {
     }
 
     // ── Pasos 1, 2 y 3: Crear cuenta con ID único, rol y estado correspondiente ──
-    public static Usuario crear(String nombre, String email, String passwordHash, Rol rol) {
-        EstadoUsuario estadoInicial = (rol == Rol.SOLICITANTE) ? EstadoUsuario.PENDIENTE : EstadoUsuario.ACTIVO;
-        return new Usuario(UsuarioId.generate(), nombre, email, passwordHash, rol, estadoInicial);
+    public static Usuario crear(
+            String nombre,
+            String email,
+            String passwordHash,
+            Rol rol) {
+
+        return new Usuario(
+                UsuarioId.generate(),
+                nombre,
+                email,
+                passwordHash,
+                rol,
+                EstadoUsuario.PENDIENTE
+        );
     }
 
     public static Usuario reordenar(UsuarioId usuarioId, String nombre, String email, String passwordHash, Rol rol, EstadoUsuario estadoUsuario) {
@@ -73,6 +84,28 @@ public class Usuario {
         if (!tienePermiso(permiso)) {
             throw new DomainException("El usuario con rol " + this.rol + " no tiene permiso para realizar la acción: " + permiso);
         }
+    }
+
+    public void aprobar() {
+
+        if (this.estadoUsuario != EstadoUsuario.PENDIENTE) {
+            throw new DomainException(
+                    "Solo se pueden aprobar cuentas pendientes"
+            );
+        }
+
+        this.estadoUsuario = EstadoUsuario.ACTIVO;
+    }
+
+    public void suspender() {
+
+        if (this.estadoUsuario != EstadoUsuario.ACTIVO) {
+            throw new DomainException(
+                    "Solo se pueden suspender cuentas activas"
+            );
+        }
+
+        this.estadoUsuario = EstadoUsuario.INACTIVO;
     }
 
     public void activar() {

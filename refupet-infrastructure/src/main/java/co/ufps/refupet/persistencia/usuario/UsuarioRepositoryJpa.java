@@ -9,7 +9,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+
+import co.ufps.refupet.usuario.EstadoUsuario;
 
 /**
  * Adaptador del repositorio de usuarios usando JPA/Hibernate.
@@ -77,4 +80,22 @@ public class UsuarioRepositoryJpa implements IUsuarioRepository {
     private Usuario toDomain(UsuarioJpa usuarioJpa) {
         return usuarioJpa.toDomain();
     }
+
+    @Override
+    public List<Usuario> findPendientes() {
+
+        return entityManager.createQuery(
+                        "SELECT u FROM UsuarioJpa u " +
+                                "WHERE u.estadoUsuario = :estado " +
+                                "ORDER BY u.nombre ASC",
+                        UsuarioJpa.class
+                )
+                .setParameter(
+                        "estado", EstadoUsuario.PENDIENTE
+                )
+                .getResultStream()
+                .map(UsuarioJpa::toDomain)
+                .toList();
+    }
+
 }

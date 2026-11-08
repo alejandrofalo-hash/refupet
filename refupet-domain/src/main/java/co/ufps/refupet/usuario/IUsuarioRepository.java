@@ -1,5 +1,6 @@
 package co.ufps.refupet.usuario;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IUsuarioRepository {
@@ -11,4 +12,7 @@ public interface IUsuarioRepository {
     Optional<Usuario> findById(UsuarioId id);
 
     Optional<Usuario> findByEmail(String email);
+
+    List<Usuario> findPendientes();
 }
+

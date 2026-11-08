@@ -1,3 +1,4 @@
+
 package co.ufps.refupet.persistencia.usuario;
 
 import co.ufps.refupet.usuario.EstadoUsuario;
@@ -5,10 +6,16 @@ import co.ufps.refupet.usuario.Rol;
 import co.ufps.refupet.usuario.Usuario;
 import co.ufps.refupet.usuario.UsuarioId;
 
+import io.quarkus.security.jpa.UserDefinition;
+import io.quarkus.security.jpa.Username;
+import io.quarkus.security.jpa.Password;
+import io.quarkus.security.jpa.Roles;
+
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "usuarios")
+@UserDefinition
 public class UsuarioJpa {
 
     @Id
@@ -18,15 +25,17 @@ public class UsuarioJpa {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
+    @Username
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Password
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
+    @Roles
     @Column(name = "rol", nullable = false)
-    private Rol rol;
+    private String rol;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_usuario", nullable = false)
@@ -35,7 +44,14 @@ public class UsuarioJpa {
     public UsuarioJpa() {
     }
 
-    public UsuarioJpa(String id, String nombre, String email, String passwordHash, Rol rol, EstadoUsuario estadoUsuario) {
+    public UsuarioJpa(
+            String id,
+            String nombre,
+            String email,
+            String passwordHash,
+            String rol,
+            EstadoUsuario estadoUsuario) {
+
         this.id = id;
         this.nombre = nombre;
         this.email = email;
@@ -44,46 +60,74 @@ public class UsuarioJpa {
         this.estadoUsuario = estadoUsuario;
     }
 
-    // Convierte Entidad JPA -> Entidad de Dominio
     public Usuario toDomain() {
         return Usuario.reordenar(
-                new UsuarioId(this.id),
-                this.nombre,
-                this.email,
-                this.passwordHash,
-                this.rol,
-                this.estadoUsuario
+                new UsuarioId(id),
+                nombre,
+                email,
+                passwordHash,
+                Rol.valueOf(rol),
+                estadoUsuario
         );
     }
 
-    // Convierte Entidad de Dominio -> Entidad JPA
     public static UsuarioJpa fromDomain(Usuario usuario) {
         return new UsuarioJpa(
                 usuario.getUsuarioId().getValue(),
                 usuario.getNombre(),
                 usuario.getEmail(),
                 usuario.getPasswordHash(),
-                usuario.getRol(),
+                usuario.getRol().name(),
                 usuario.getEstadoUsuario()
         );
     }
 
-    // Getters y Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public Rol getRol() { return rol; }
-    public void setRol(Rol rol) { this.rol = rol; }
+    public String getEmail() {
+        return email;
+    }
 
-    public EstadoUsuario getEstadoUsuario() { return estadoUsuario; }
-    public void setEstadoUsuario(EstadoUsuario estadoUsuario) { this.estadoUsuario = estadoUsuario; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
+    }
+
+    public EstadoUsuario getEstadoUsuario() {
+        return estadoUsuario;
+    }
+
+    public void setEstadoUsuario(
+            EstadoUsuario estadoUsuario) {
+        this.estadoUsuario = estadoUsuario;
+    }
 }
