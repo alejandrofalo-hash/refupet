@@ -1,6 +1,5 @@
 package co.ufps.refupet.usuario;
 
-import co.ufps.refupet.DomainException;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -8,22 +7,18 @@ public final class UsuarioId {
 
     private final String value;
 
-    private UsuarioId(String value) {
+    public UsuarioId(String value) {
         if (value == null || value.isBlank()) {
-            throw new DomainException("El usuarioId no puede estar vacío");
+            throw new IllegalArgumentException("El ID de usuario no puede estar vacío");
         }
-        this.value = value.strip();
+        this.value = value;
     }
 
     public static UsuarioId generate() {
         return new UsuarioId(UUID.randomUUID().toString());
     }
 
-    public static UsuarioId of(String value) {
-        return new UsuarioId(value);
-    }
-
-    public String value() {
+    public String getValue() {
         return value;
     }
 

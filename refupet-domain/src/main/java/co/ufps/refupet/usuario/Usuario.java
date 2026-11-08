@@ -1,66 +1,59 @@
 package co.ufps.refupet.usuario;
 
 import co.ufps.refupet.DomainException;
-
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Usuario {
 
-    private UsuarioId usuarioId;
+    private final UsuarioId usuarioId;
     private String nombre;
     private String email;
     private String passwordHash;
     private Rol rol;
     private EstadoUsuario estadoUsuario;
-    private LocalDateTime fechaCreacion;
 
     private Usuario(UsuarioId usuarioId, String nombre, String email, String passwordHash, Rol rol, EstadoUsuario estadoUsuario) {
-        this.usuarioId = Objects.requireNonNull(usuarioId, "usuarioId es obligatorio");
-        this.nombre = Objects.requireNonNull(nombre, "El nombre es obligatorio");
-        this.email = Objects.requireNonNull(email, "El email es obligatorio");
-        this.passwordHash = Objects.requireNonNull(passwordHash, "passwordHash es obligatorio");
-        this.rol = Objects.requireNonNull(rol, "El rol es obligatorio");
-        this.estadoUsuario = estadoUsuario != null ? estadoUsuario : EstadoUsuario.ACTIVO;
-        this.fechaCreacion = LocalDateTime.now();
+        this.usuarioId = Objects.requireNonNull(usuarioId, "El identificador único (UsuarioId) es obligatorio");
+        this.nombre = validarNombre(nombre);
+        this.email = validarEmail(email);
+        this.passwordHash = Objects.requireNonNull(passwordHash, "El passwordHash es obligatorio");
+        this.rol = Objects.requireNonNull(rol, "Se debe asignar un rol válido");
+        this.estadoUsuario = estadoUsuario != null ? estadoUsuario : EstadoUsuario.PENDIENTE;
     }
 
-    /**
-     * Factory Method para el registro/creación de cuentas según HU-15.
-     * Aplica las reglas e invariantes del dominio.
-     */
-    public static Usuario registrar(String nombre, String email, String passwordHash, Rol rol) {
-        if (nombre == null || nombre.isBlank()) {
-            throw new DomainException("El nombre del usuario es obligatorio");
+    // ── Paso 1: Validar Datos ──
+    private String validarNombre(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new DomainException("El nombre del usuario es obligatorio y no puede estar vacío");
         }
-        if (email == null || email.isBlank()) {
+        return nombre.trim();
+    }
+
+    private String validarEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
             throw new DomainException("El email es obligatorio");
         }
-        if (passwordHash == null || passwordHash.isBlank()) {
-            throw new DomainException("La contraseña es obligatoria");
+        String emailLimpio = email.trim().toLowerCase();
+        if (!emailLimpio.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new DomainException("El formato del email no es válido");
         }
-        if (rol == null) {
-            throw new DomainException("El rol assigned es obligatorio para la cuenta");
-        }
-
-        return new Usuario(UsuarioId.generate(), nombre, email, passwordHash, rol, EstadoUsuario.ACTIVO);
+        return emailLimpio;
     }
 
-    /**
-     * Factory Method para la reconstrucción desde la capa de infraestructura (JPA/DB).
-     */
-    public static Usuario reordenar(UsuarioId usuarioId, String nombre, String email, String passwordHash,
-                                    Rol rol, EstadoUsuario estadoUsuario, LocalDateTime fechaCreacion) {
-        Usuario usuario = new Usuario(usuarioId, nombre, email, passwordHash, rol, estadoUsuario);
-        usuario.fechaCreacion = fechaCreacion;
-        return usuario;
+    // ── Pasos 1, 2 y 3: Crear cuenta con ID único, rol y estado correspondiente ──
+    public static Usuario crear(String nombre, String email, String passwordHash, Rol rol) {
+        EstadoUsuario estadoInicial = (rol == Rol.SOLICITANTE) ? EstadoUsuario.PENDIENTE : EstadoUsuario.ACTIVO;
+        return new Usuario(UsuarioId.generate(), nombre, email, passwordHash, rol, estadoInicial);
     }
 
-    // ── Comandos de Negocio ──
+    public static Usuario reordenar(UsuarioId usuarioId, String nombre, String email, String passwordHash, Rol rol, EstadoUsuario estadoUsuario) {
+        return new Usuario(usuarioId, nombre, email, passwordHash, rol, estadoUsuario);
+    }
 
+    // ── Paso 2: Asignar / Cambiar Rol ──
     public void cambiarRol(Rol nuevoRol) {
         if (nuevoRol == null) {
-            throw new DomainException("El nuevo rol no puede ser nulo");
+            throw new DomainException("El nuevo rol no puede ser nulo o inválido");
         }
         if (this.rol == nuevoRol) {
             throw new DomainException("El usuario ya posee el rol asignado: " + nuevoRol);
@@ -68,21 +61,50 @@ public class Usuario {
         this.rol = nuevoRol;
     }
 
-    public void desactivar() {
-        this.estadoUsuario = EstadoUsuario.INACTIVO;
+    // ── Paso 4: Aplicar Permisos según Rol ──
+    public boolean tienePermiso(Permiso permiso) {
+        if (!estaActivo()) {
+            throw new DomainException("La cuenta no se encuentra activa para realizar esta acción");
+        }
+        return this.rol.tienePermiso(permiso);
+    }
+
+    public void validarPermiso(Permiso permiso) {
+        if (!tienePermiso(permiso)) {
+            throw new DomainException("El usuario con rol " + this.rol + " no tiene permiso para realizar la acción: " + permiso);
+        }
     }
 
     public void activar() {
         this.estadoUsuario = EstadoUsuario.ACTIVO;
     }
 
-    // ── Getters (Inmutables) ──
+    public void desactivar() {
+        this.estadoUsuario = EstadoUsuario.INACTIVO;
+    }
 
+    public boolean estaActivo() {
+        return this.estadoUsuario == EstadoUsuario.ACTIVO;
+    }
+
+    // ── Getters ──
     public UsuarioId getUsuarioId() { return usuarioId; }
     public String getNombre() { return nombre; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
     public Rol getRol() { return rol; }
     public EstadoUsuario getEstadoUsuario() { return estadoUsuario; }
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Usuario usuario = (Usuario) o;
+        return Objects.equals(usuarioId, usuario.usuarioId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(usuarioId);
+    }
 }
