@@ -2,7 +2,6 @@ package co.ufps.refupet.animal;
 
 import co.ufps.refupet.DomainException;
 import java.time.LocalDate;
-import java.util.Objects;
 
 public class Animal {
     private AnimalId id;

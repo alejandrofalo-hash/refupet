@@ -3,9 +3,6 @@ package co.ufps.refupet.animal;
 import co.ufps.refupet.DomainException;
 
 // Assuming these are in your refupet-domain module
-import co.ufps.refupet.animal.domain.Animal;
-import co.ufps.refupet.animal.domain.GeneradorCodigoUnico;
-import co.ufps.refupet.animal.domain.IAnimalRepository;
 
 public class RegistrarIngresoAnimalUseCase {
 

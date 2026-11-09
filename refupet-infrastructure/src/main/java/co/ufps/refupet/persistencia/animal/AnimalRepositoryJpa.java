@@ -1,9 +1,16 @@
 package co.ufps.refupet.persistencia.animal;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface AnimalRepositoryJpa extends JpaRepository<AnimalJpa, String> {
-    boolean existsByCodigoUnico(String codigoUnico);
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class AnimalRepositoryJpa implements PanacheRepository<AnimalJpa> {
+
+    /**
+     * Verifica si existe un animal con el código único especificado.
+     */
+    public boolean existsByCodigoUnico(String codigoUnico) {
+        return count("codigoUnico", codigoUnico) > 0;
+    }
 }

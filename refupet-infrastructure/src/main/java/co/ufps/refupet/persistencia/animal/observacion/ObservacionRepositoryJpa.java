@@ -1,11 +1,17 @@
 package co.ufps.refupet.persistencia.animal.observacion;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 
-@Repository
-public interface ObservacionRepositoryJpa extends JpaRepository<ObservacionJpa, String> {
-    List<ObservacionJpa> findByAnimalIdOrderByFechaCreacionDesc(String animalId);
+@ApplicationScoped
+public class ObservacionRepositoryJpa implements PanacheRepository<ObservacionJpa> {
+
+    /**
+     * Busca las observaciones de un animal especifico ordenadas por fecha de
+     * creacion descendente.
+     */
+    public List<ObservacionJpa> findByAnimalIdOrderByFechaCreacionDesc(String animalId) {
+        return list("animalId = ?1 order by fechaCreacion desc", animalId);
+    }
 }

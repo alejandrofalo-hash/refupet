@@ -8,7 +8,6 @@
         <artifactId>refupet</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>refupet-infrastructure</artifactId>
 
     <properties>
@@ -18,6 +17,10 @@
     </properties>
 
     <dependencies>
+        <dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-hibernate-orm-panache</artifactId>
+    </dependency>
         <!-- Extension de Quarkus para JPA / Hibernate ORM -->
         <dependency>
             <groupId>io.quarkus</groupId>

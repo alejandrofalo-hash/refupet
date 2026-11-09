@@ -1,10 +1,10 @@
-package co.ufps.refupet.util;
+package co.ufps.refupet.persistencia.animal;
 
 import co.ufps.refupet.animal.GeneradorCodigoUnico;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.UUID;
 
-@Component
+@ApplicationScoped
 public class GeneradorCodigoUnicoImpl implements GeneradorCodigoUnico {
     @Override
     public String generar() {

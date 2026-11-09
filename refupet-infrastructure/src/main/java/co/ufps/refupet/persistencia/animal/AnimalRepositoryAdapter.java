@@ -3,11 +3,10 @@ package co.ufps.refupet.persistencia.animal;
 import co.ufps.refupet.animal.Animal;
 import co.ufps.refupet.animal.AnimalId;
 import co.ufps.refupet.animal.IAnimalRepository;
-import org.springframework.stereotype.Component;
-
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
 
-@Component
+@ApplicationScoped
 public class AnimalRepositoryAdapter implements IAnimalRepository {
 
     private final AnimalRepositoryJpa jpaRepository;
@@ -29,12 +28,13 @@ public class AnimalRepositoryAdapter implements IAnimalRepository {
         entity.setFechaIngreso(animal.getFechaIngreso());
         entity.setFechaMinimaCuarentena(animal.getFechaMinimaCuarentena());
 
-        jpaRepository.save(entity);
+        jpaRepository.persist(entity);;
     }
 
     @Override
     public boolean existeCodigo(String codigoUnico) {
-        return jpaRepository.existsByCodigoUnico(codigoUnico);
+        return jpaRepository.count("codigoUnico", codigoUnico) > 0;
+        
     }
 
     @Override
