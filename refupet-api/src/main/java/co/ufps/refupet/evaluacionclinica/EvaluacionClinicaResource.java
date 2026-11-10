@@ -17,6 +17,9 @@ public class EvaluacionClinicaResource {
     @Inject
     RegistrarVacunaUseCase registrarVacunaUseCase;
 
+    @Inject
+    RegistrarDesparasitacionUseCase registrarDesparasitacionUseCase;
+
     @POST
     @Path("/{animalId}/evaluacion-clinica")
     @RolesAllowed("VETERINARIO") // Garantiza que solo el personal veterinario pueda registrar evaluaciones
@@ -41,6 +44,21 @@ public class EvaluacionClinicaResource {
 
         RegistrarVacunaCommand command = request.toCommand(animalId);
         VacunaAplicadaResponseDTO response = registrarVacunaUseCase.ejecutar(command);
+
+        return Response.status(Response.Status.CREATED)
+                .entity(response)
+                .build();
+    }
+
+    @POST
+    @Path("/{animalId}/desparasitaciones")
+    @RolesAllowed("VETERINARIO")
+    public Response registrarDesparasitacion(
+            @PathParam("animalId") Long animalId,
+            RegistrarDesparasitacionRequest request) {
+
+        RegistrarDesparasitacionCommand command = request.toCommand(animalId);
+        DesparasitacionResponseDTO response = registrarDesparasitacionUseCase.ejecutar(command);
 
         return Response.status(Response.Status.CREATED)
                 .entity(response)
