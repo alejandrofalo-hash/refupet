@@ -7,5 +7,5 @@ public interface IAnimalRepository {
 
     boolean existeCodigo(String codigoUnico);
 
-    Optional<Animal> buscarPorId(AnimalId id);
+    Optional<Animal> buscarPorId(Long id);
 }

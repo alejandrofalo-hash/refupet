@@ -1,7 +1,6 @@
 package co.ufps.refupet.persistencia.animal;
 
 import co.ufps.refupet.animal.Animal;
-import co.ufps.refupet.animal.AnimalId;
 import co.ufps.refupet.animal.IAnimalRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
@@ -38,7 +37,7 @@ public class AnimalRepositoryAdapter implements IAnimalRepository {
     }
 
     @Override
-    public Optional<Animal> buscarPorId(AnimalId id) {
+    public Optional<Animal> buscarPorId(Long id) {
         return Optional.empty(); // Implementar cuando sea necesario
     }
 }
